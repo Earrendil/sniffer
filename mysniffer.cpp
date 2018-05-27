@@ -7,16 +7,17 @@ using namespace std;
 bool callback(const PDU &pdu) {
     // Find the IP layer
     const IP &ip = pdu.rfind_pdu<IP>(); 
+    cout << ip.src_addr() << " -> " 
+         << ip.dst_addr() << endl;
     // Find the TCP layer
-    const TCP &tcp = pdu.rfind_pdu<TCP>(); 
-    cout << ip.src_addr() << ':' << tcp.sport() << " -> " 
-         << ip.dst_addr() << ':' << tcp.dport() << endl;
+    //const TCP &tcp = pdu.rfind_pdu<TCP>(); 
+    //cout << ip.src_addr() << ':' << tcp.sport() << " -> " 
+    //     << ip.dst_addr() << ':' << tcp.dport() << endl;
     return true;
 }
 
 void print_all_interfaces() {
 
-    std::cout<<"Hello world!"<<std::endl;
     vector<NetworkInterface> interfaces = NetworkInterface::all();
 
     for (const NetworkInterface& iface : interfaces) {
@@ -27,5 +28,10 @@ void print_all_interfaces() {
 
 int main() {
     print_all_interfaces();
-    Sniffer("eth0").sniff_loop(callback);
+    //try{
+    Sniffer sniffer("ens33");
+    sniffer.sniff_loop(callback);
+   // } catch (std::exception e) {
+    //    e.what();
+    //}
 }

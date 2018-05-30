@@ -130,7 +130,7 @@ std::vector<PDU*> sniff_packets(u_int num_of_pockets) {
 
 int main() {
     print_all_interfaces();
-    std::vector<PDU*> packets = sniff_packets(120);
+    std::vector<PDU*> packets = sniff_packets(2000);
     //std::vector<Packet> packets = sniff_packets(5);
     //cout<<"OK3"<<endl;
     save_pockets_to_pcap("log.pcap", packets);

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <tins/tins.h>
 
 using namespace Tins;
@@ -26,9 +27,21 @@ void print_all_interfaces() {
     }
 }
 
-void save_pockets_to_pcap(std::string filename, std::vector<PDU*> packets) {
+void save_pockets_to_pcap(const std::string& filename, std::vector<PDU*> packets) {
+    //void save_pockets_to_pcap(const std::string& filename, std::vector<Packet> packets) {
+    ofstream pcap_file (filename);
+    pcap_file.close();
+    
     PacketWriter writer(filename, DataLinkType<EthernetII>());
-    writer.write(packets.begin(), packets.end());
+    cout<<"OK4"<<endl;
+    cout<<writer.ETH2<<endl;
+    for (const auto& packet : packets) {
+        cout<<"rpzed"<<endl;
+        writer.write(packet);
+        cout<<"po"<<endl;
+    }
+    //writer.write(packets.begin(), packets.end());
+    cout<<"OK5"<<endl;
    // for (const auto& pdu : packets) {
         // Is there an IP PDU somewhere?
       //  if (pdu->find_pdu<IP>()) {
@@ -40,7 +53,21 @@ void save_pockets_to_pcap(std::string filename, std::vector<PDU*> packets) {
     
 }
 
+bool is_filtered(IP ip) {
+    std::vector<std::string> filters;
+    filters.push_back("192.168.174.1");
+    filters.push_back("192.168.174.128");
+    for (const auto& filter : filters) {
+        if (ip.src_addr() ==  IPv4Address(filter) 
+            || ip.dst_addr() == IPv4Address(filter)){
+            return true;
+        }
+    }
+    return false;       
+}
+
 std::vector<PDU*> sniff_packets(u_int num_of_pockets) {
+//std::vector<Packet> sniff_packets(u_int num_of_pockets) {
     SnifferConfiguration config;
     config.set_promisc_mode(true);
     
@@ -49,22 +76,29 @@ std::vector<PDU*> sniff_packets(u_int num_of_pockets) {
     IPv4Address filter2 = "192.168.174.128";
     //sniffer.sniff_loop(callback);
     std::vector<PDU*> packets;
+    //std::vector<Packet> packets;
     while (packets.size() != num_of_pockets) {
         // next_packet returns a PtrPacket, which can be implicitly converted to Packet.
         PDU* pdu = sniffer.next_packet();
+        //Packet pdu = sniffer.next_packet();
         try{
+            //const IP &ip = pdu.pdu()->rfind_pdu<IP>(); 
             const IP &ip = pdu->rfind_pdu<IP>(); 
-            if (ip.src_addr() !=  filter1 && ip.src_addr() != filter2){
-              packets.push_back(pdu);
-                cout << ip.src_addr() << " -> " 
-                << ip.dst_addr() << endl;  
-            }
+            //if (ip.src_addr() !=  filter1 && ip.src_addr() != filter2){
+            
+            //if (!is_filtered(ip)) {
+                packets.push_back(pdu);
+              //  cout << ip.src_addr() << " -> " 
+              //  << ip.dst_addr() << endl;  
+            //}
             
          } catch (std::exception e) {
              e.what();
          }
-         delete pdu;
+         cout<<"OK1"<<endl;
+         //delete pdu;
     }
+    cout<<"OK2"<<endl;
     return packets;
     /*
     for (int i=0; i<num_of_pockets; ++i) {
@@ -86,8 +120,12 @@ std::vector<PDU*> sniff_packets(u_int num_of_pockets) {
 
 int main() {
     print_all_interfaces();
-    std::vector<PDU*> packets = sniff_packets(100);
+    std::vector<PDU*> packets = sniff_packets(1
+    );
+    //std::vector<Packet> packets = sniff_packets(5);
+    cout<<"OK3"<<endl;
     save_pockets_to_pcap("log.pcap", packets);
+    cout<<"OK5"<<endl;
     //try{
     
    // } catch (std::exception e) {packets
